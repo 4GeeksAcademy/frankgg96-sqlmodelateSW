@@ -1,19 +1,40 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import String, Integer, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 db = SQLAlchemy()
 
-class User(db.Model):
+class Favorite(db.Model): 
+    __tablename__ = 'favorites'
     id: Mapped[int] = mapped_column(primary_key=True)
-    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    planet_id: Mapped[int] = mapped_column(ForeignKey("planets.id"), primary_key=True, nullable=True)
+    character_id: Mapped[int] = mapped_column(ForeignKey("characters.id"), primary_key=True, nullable=True)
 
 
-    def serialize(self):
-        return {
-            "id": self.id,
-            "email": self.email,
-            # do not serialize the password, its a security breach
-        }
+class User(db.Model): 
+    __tablename__ = 'users'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    first_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    last_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    email: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    password: Mapped[str] = mapped_column(String(100), nullable=False)
+    subscription_date: Mapped[str] = mapped_column(String(100))
+    favorites: Mapped[list["Favorite"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+
+class Planet(db.Model):
+    __tablename__ = 'planets'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    climate: Mapped[str] = mapped_column(String(100))
+    population: Mapped[int] = mapped_column(Integer)
+
+class Character(db.Model):
+    __tablename__ = 'characters'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    gender: Mapped[str] = mapped_column(String(100))
+    eye_color: Mapped[str] = mapped_column(String(100))
+                                         
+        
+

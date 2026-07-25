@@ -7,9 +7,9 @@ db = SQLAlchemy()
 class Favorite(db.Model): 
     __tablename__ = 'favorites'
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
-    planet_id: Mapped[int] = mapped_column(ForeignKey("planets.id"), primary_key=True, nullable=True)
-    character_id: Mapped[int] = mapped_column(ForeignKey("characters.id"), primary_key=True, nullable=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    planet_id: Mapped[int] = mapped_column(ForeignKey("planets.id"), nullable=True)
+    character_id: Mapped[int] = mapped_column(ForeignKey("characters.id"), nullable=True)
 
 
 class User(db.Model): 

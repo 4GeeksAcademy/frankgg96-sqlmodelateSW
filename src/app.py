@@ -75,6 +75,28 @@ def get_users():
     users_list = [user.serialize() for user in users]
     return jsonify(users_list), 200
 
+@app.route('/users/favorites', methods=['GET'])
+def guet_user_favorites():
+    current_user_id = 1
+    favorites = db.session.execute(db.select(Favorite).filter_by(users_id=current_user_id)).scalars().all()
+    favorites_list = [fav.serialize() for fav in favorites]
+    return jsonify(favorites_list), 200
+
+@app.route('/favorite/planet/<int:planet_id>', methods=['POST'])
+def add_favorite_planet(planet_id):
+    current_user_id = 1   
+    planet = db.session.execute(db.select(Planet).filter_by(id=planet_id)).scalar_one_or_none()
+    if planet is None:
+        return jsonify({"msg": "El planeta no existe"}), 404 
+    existing_fav = db.session.execute(db.select(Favorite).filter_by(user_id=current_user_id, planet_id=planet_id)).scalar_one_or_none()
+    if existing_fav:
+        return jsonify({"msg": "Este planeta ya está en tus favoritos"}), 400
+
+    new_fav = Favorite(user_id=current_user_id, planet_id=planet_id)
+    db.session.add(new_fav) 
+    db.session.commit() 
+    return jsonify({"msg": "Planeta agregado a favoritos"}), 201
+
 
 
 

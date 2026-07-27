@@ -36,11 +36,45 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
+
 @app.route('/people', methods=['GET'])
 def get_people():
     people = db.session.execute(db.select(Character)).scalars().all()
     people_list = [ppl.serialize() for ppl in people]
     return jsonify(people_list)
+
+
+@app.route('/people/<int:people_id>', methods=['GET'])
+def get_single_person(people_id):
+    person = db.session.execute(db.select(Character).filter_by(id=people_id)).scalar_one_or_none()
+    if person is None:
+        return jsonify({"msg": "Personaje no encontrado"}), 404
+    return jsonify(person.serialize()), 200
+
+
+
+@app.route('/planets/<int:planet_id>', methods=['GET'])
+def get_planets():
+    planets = db.session.execute(db.selec(Planet)).scalars().all()
+    planets_list = [planet.serialize() for planet in planets]
+    return jsonify(planets_list), 200
+
+
+@app.route('/planets/<int:planet_id>', methods=['GET'])
+def get_single_planet(planet_id):
+    planet = db.session.execute(db.select(Planet).filter_by(id=planet_id)).scalar_one_or_none()
+    if planet is None:
+        return jsonify({"Planeta no encontrado"}), 404
+    return jsonify(planet.serialize()), 200
+
+
+           
+@app.route('/users', methods=['GET'])
+def get_users():
+    users = db.session.execute(db.select(User)).scalars().all()
+    users_list = [user.serialize() for user in users]
+    return jsonify(users_list), 200
+
 
 
 

@@ -78,7 +78,7 @@ def get_users():
 @app.route('/users/favorites', methods=['GET'])
 def guet_user_favorites():
     current_user_id = 1
-    favorites = db.session.execute(db.select(Favorite).filter_by(users_id=current_user_id)).scalars().all()
+    favorites = db.session.execute(db.select(Favorite).filter_by(user_id=current_user_id)).scalars().all()
     favorites_list = [fav.serialize() for fav in favorites]
     return jsonify(favorites_list), 200
 
@@ -97,8 +97,40 @@ def add_favorite_planet(planet_id):
     db.session.commit() 
     return jsonify({"msg": "Planeta agregado a favoritos"}), 201
 
+@app.route('/favorite/people/<int:people_id>', methods=['POST'])
+def add_favorite_character(people_id):
+    current_user_id = 1 
+    character = db.session.execute(db.select(Character).filter_by(id=people_id)).scalar_one_or_none()
+    if character is None: 
+        return jsonify({"msg": "El personaje no existe"}), 404
+    existing_fav = db.session.execute(db.select(Favorite).filter_by(user_id=current_user_id, character_id=people_id)).scalar_one_or_none()
+    if existing_fav:
+        return jsonify({"msg": "Este personaje ya está en tus favoritos"}), 400
 
+    new_fav = Favorite(user_id=current_user_id, character_id=people_id)
+    db.session.add(new_fav)
+    db.session.commit()
+    return jsonify({"msg": "Personaje agregado a favoritos"}), 201
 
+@app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
+def delete_favorite_planet(planet_id):
+    current_user_id = 1
+    fav_to_delete = db.session.execute(db.select(Favorite).filter_by(user_id=current_user_id, planet_id=planet_id)).scalar_one_or_none()
+    if fav_to_delete is None:
+        return jsonify({"msg": "El favorito no existe"}), 404
+    db.session.delete(fav_to_delete)
+    db.session.commit()
+    return jsonify({"msg": "Planeta eliminado de favoritos"}), 200
+
+@app.route('/favorite/people/<int:people_id>', methods=['DELETE'])
+def delete_favorite_character(people_id):
+    current_user_id = 1
+    fav_to_delete = db.session.execute(db.select(Favorite).filter_by(user_id=current_user_id, character_id=people_id)).scalar_one_or_none()
+    if fav_to_delete is None:
+            return jsonify({"msg": "El favorito no existe"}), 404
+    db.session.delete(fav_to_delete)
+    db.session.commit()
+    return jsonify({"msg": "Personaje eliminado de favoritos"}), 200
 
 
 # this only runs if `$ python src/app.py` is executed
